@@ -13,6 +13,7 @@ from itertools import count
 import motmetrics
 import numpy as np
 import pandas as pd
+from motmetrics.mot import _INDEX_FIELDS
 
 
 class MOTAccumulatorCustom(motmetrics.mot.MOTAccumulator):
@@ -21,20 +22,35 @@ class MOTAccumulatorCustom(motmetrics.mot.MOTAccumulator):
 
     @staticmethod
     def new_event_dataframe_with_data(indices, events):
-        """
-        Create a new DataFrame filled with data.
-        This version overwrites the original in MOTAccumulator achieves about 2x speedups.
+        """Create a new DataFrame filled with data.
 
         Params
         ------
-        indices: list
-            list of tuples (frameid, eventid)
-        events: list
-            list of events where each event is a list containing
-            'Type', 'OId', HId', 'D'
+        indices: dict
+            dict of lists with fields 'FrameId' and 'Event'
+        events: dict
+            dict of lists with fields 'Type', 'OId', 'HId', 'D'
         """
-        idx = pd.MultiIndex.from_tuples(indices, names=['FrameId', 'Event'])
-        df = pd.DataFrame(events, index=idx, columns=['Type', 'OId', 'HId', 'D'])
+
+        if len(events) == 0:
+            return MOTAccumulatorCustom.new_event_dataframe()
+
+        raw_type = pd.Categorical(
+            events['Type'],
+            categories=['RAW', 'FP', 'MISS', 'SWITCH', 'MATCH', 'TRANSFER', 'ASCEND', 'MIGRATE'],
+            ordered=False)
+        series = [
+            pd.Series(raw_type, name='Type'),
+            pd.Series(events['OId'], name='OId'),
+            pd.Series(events['HId'], name='HId'),
+            pd.Series(events['D'], name='D')
+        ]
+
+        idx = pd.MultiIndex.from_arrays(
+            [indices[field] for field in _INDEX_FIELDS],
+            names=_INDEX_FIELDS)
+        df = pd.concat(series, axis=1)
+        df.index = idx
         return df
 
     @staticmethod

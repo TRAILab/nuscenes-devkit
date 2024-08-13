@@ -140,22 +140,7 @@ def create_motmetrics() -> MetricsHost:
     :return The initialized MetricsHost object with default MOT metrics.
     """
     # Create new metrics host object.
-    mh = MetricsHost()
-
-    # Suppress deprecation warning from py-motmetrics.
-    warnings.filterwarnings('ignore', category=DeprecationWarning)
-
-    # Register standard metrics.
-    fields = [
-        'num_frames', 'obj_frequencies', 'num_matches', 'num_switches', 'num_false_positives', 'num_misses',
-        'num_detections', 'num_objects', 'num_predictions', 'mostly_tracked', 'mostly_lost', 'num_fragmentations',
-        'motp', 'mota', 'precision', 'recall', 'track_ratios'
-    ]
-    for field in fields:
-        mh.register(getattr(motmetrics.metrics, field), formatter='{:d}'.format)
-
-    # Reenable deprecation warning.
-    warnings.filterwarnings('default', category=DeprecationWarning)
+    mh = motmetrics.metrics.create()
 
     # Register custom metrics.
     # Specify all inputs to avoid errors incompatibility between type hints and py-motmetric's introspection.
