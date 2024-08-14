@@ -140,7 +140,7 @@ class MOTAccumulatorCustom(motmetrics.mot.MOTAccumulator):
 
             if r.empty:
                 r = copy
-            else:
+            elif not copy.empty:
                 r = pd.concat((r, copy))
             mapping_infos.append(infos)
 
