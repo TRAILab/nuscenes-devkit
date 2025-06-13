@@ -20,3 +20,5 @@ doc
 .pydevproject
 _ext
 settings.json
+build/*
+*.egg-info/
